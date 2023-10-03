@@ -5,4 +5,5 @@ echo "Git revision: "
 git rev-parse HEAD
 
 export test_name=w8a
-mpiexec -n 6 python3.8 ./experiment_vr_all.py
+export use_vr_marina=True
+mpiexec -n 6 python ./experiment_vr_all.py

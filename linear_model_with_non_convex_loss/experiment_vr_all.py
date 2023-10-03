@@ -3,19 +3,19 @@
 
 import numpy as np
 import matplotlib.pyplot as plt
-import dataset, compressors, dataset, utils
+import compressors, dataset, utils
 import time, random, sys, os, math, copy
 from mpi4py import MPI
 
-plt.rcParams["lines.markersize"] = 20
-plt.rcParams["lines.linewidth"] = 2
+# plt.rcParams["lines.markersize"] = 20
+# plt.rcParams["lines.linewidth"] = 2
 
 # backup font
-plt.rcParams["font.size"] = 27
+# plt.rcParams["font.size"] = 27
 
 # For debug purpose
 use_grad_check = False                         # For debug purpose (incrase compute time a lot) use numerical gradients
-use_first_20_samples = False                   # For debug purpose take only first 10 sample
+use_first_20_samples = True                  # For debug purpose take only first 2e0 sample
 use_test_set = False                           # Use test set in graphic and calculations
 
 t0 = time.time()
@@ -23,7 +23,7 @@ t0 = time.time()
 #==================================MPI metainformation===================================================================
 comm = MPI.COMM_WORLD
 mpi_rank = MPI.COMM_WORLD.Get_rank()
-mpi_size = MPI.COMM_WORLD.Get_size()
+mpi_size = MPI.COMM_WORLD.Get_size() 
 mpi_name = MPI.Get_processor_name()
 version = MPI.Get_version()
 # =================================Configuration of launching============================================================
@@ -38,7 +38,7 @@ def zeroOneLoss(theta, X, Y, margin):
     return ErrMean
 
 def dbgprint(*args):
-    printing_dbg = False
+    printing_dbg = False 
     if printing_dbg == True:
         print(f"node {mpi_rank}/{mpi_size}:", *args, flush = True)
 
@@ -219,7 +219,7 @@ use_vr_diana  = bool(os.getenv("use_vr_diana",  False)) # use VR Marina
 use_diana     = bool(os.getenv("use_diana",     False)) # use Marina
 
 vr_batch_size_percentage = float(os.getenv("vr_batch_size_percentage", 1.0/100.0)) # VR Marina batch size
-p = float(os.getenv("p", 1.0))                        # p metaparameter for algorithm
+p = float(os.getenv("p", 1.0))                                                     # p metaparameter for algorithm
 
 print("===================================================================")
 rootprint("test_name:", test_name)
@@ -263,9 +263,11 @@ data.test_true_targets = 2*((data.test_true_targets - min_target) / (max_target 
 if use_first_20_samples:
     data.train_samples = data.train_samples[0:20]#000,:]
     data.train_true_targets = data.train_true_targets[0:20]#000,:]
+    data.test_samples = data.test_samples[:20]
+    data.test_true_targets = data.test_true_targets[:20]
 #====================================================================================================================
-if mpi_rank == 0:
-    data.printInfo()
+# if mpi_rank == 0:
+#     data.printInfo()
 #====================================================================================================================
 
 D = data.variables()                                           # Dimension of the problem
@@ -277,14 +279,14 @@ worker_id = mpi_rank - 1                                       # Worker id
 if mpi_size == 1:
     #data.train_samples = data.train_samples*0 + 1
     #data.train_true_targets = data.train_true_targets*0 +1
-    test_lamba = 0.0
+    test_lambda = 0.0
 
     # Test analytic gradient
     testX = 2*(np.random.uniform(size=(D,1)) - 0.5)
-    ga = fFullGrad(data, test_lamba, testX, None)
+    ga = fFullGrad(data, test_lambda, testX, None)
 
     def testFunction(dataset, x):
-        return f(dataset, test_lamba, x)
+        return f(dataset, test_lambda, x)
     gc = utils.gradientCheck(data, testX, testFunction)
 
     print(f"relative error for compute gradient in R^{D}: ", np.linalg.norm(gc-ga)/np.linalg.norm(gc))
@@ -300,7 +302,7 @@ SamplePerNodeTrain = math.floor(data.trainObservations() / Workers)   # Samples 
 data_for_node = []
 Li = []
 
-dbgprint(f"hello {mpi_rank}")
+rootprint(f"hello {mpi_rank}")
 for n in range(Workers):
     data_new = None
     
@@ -320,7 +322,7 @@ for n in range(Workers):
             Li.append(0.15405 * np.max(np.sum((data_new.train_samples)**2,axis=1)))
     data_for_node.append(data_new)
 
-Li = comm.bcast(Li, 0)
+Li = comm.bcast(Li, 0) # TODO not clear
 
 Lmax = max(Li)
 Lavg = np.mean(Li)
@@ -346,17 +348,17 @@ KRounds = 1                                 # Number of rounds to average behavi
 
 ktest_values = [
 
-                             {"gamma": fixed_gamma, "p":p, "lamb" : L*(1.0e-6), 
-                             "use_vr_marina" : True, "use_marina": False, "use_vr_diana": False, "use_diana": False, "use_gd": False,
-                             "init_compressor": lambda cmr: cmr.makeRandKCompressor(int(1), D),
-                             "component_bits_size": 32
-                             }, 
+                            #  {"gamma": fixed_gamma, "p":p, "lamb" : L*(1.0e-6), 
+                            #  "use_vr_marina" : True, "use_marina": False, "use_vr_diana": False, "use_diana": False, "use_gd": False,
+                            #  "init_compressor": lambda cmr: cmr.makeRandKCompressor(int(1), D),
+                            #  "component_bits_size": 32
+                            #  }, 
 
-                             {"gamma": fixed_gamma, "p":p, "lamb" : L*(1.0e-6), 
-                             "use_vr_marina" : True, "use_marina": False, "use_vr_diana": False, "use_diana": False, "use_gd": False,
-                             "init_compressor": lambda cmr: cmr.makeRandKCompressor(int(5), D),
-                             "component_bits_size": 32
-                             }, 
+                            #  {"gamma": fixed_gamma, "p":p, "lamb" : L*(1.0e-6), 
+                            #  "use_vr_marina" : True, "use_marina": False, "use_vr_diana": False, "use_diana": False, "use_gd": False,
+                            #  "init_compressor": lambda cmr: cmr.makeRandKCompressor(int(5), D),
+                            #  "component_bits_size": 32
+                            #  }, 
 
                              {"gamma": fixed_gamma, "p":p, "lamb" : L*(1.0e-6), 
                              "use_vr_marina" : True, "use_marina": False, "use_vr_diana": False, "use_diana": False, "use_gd": False,
@@ -364,25 +366,30 @@ ktest_values = [
                              "component_bits_size": 32
                              }, 
                              {"gamma": fixed_gamma, "p":p, "lamb" : L*(1.0e-6), 
-                             "use_vr_marina" : False, "use_marina": False, "use_vr_diana": True, "use_diana": False, "use_gd": False,
-                             "init_compressor": lambda cmr: cmr.makeRandKCompressor(int(1), D),
-                             "component_bits_size": 32
-                             }, 
-
-                             {"gamma": fixed_gamma, "p":p, "lamb" : L*(1.0e-6), 
-                             "use_vr_marina" : False, "use_marina": False, "use_vr_diana": True, "use_diana": False, "use_gd": False,
-                             "init_compressor": lambda cmr: cmr.makeRandKCompressor(int(5), D),
-                             "component_bits_size": 32
-                             },
-                             {"gamma": fixed_gamma, "p":p, "lamb" : L*(1.0e-6), 
-                             "use_vr_marina" : False, "use_marina": False, "use_vr_diana": True, "use_diana": False, "use_gd": False,
+                             "use_vr_marina" : False, "use_marina": False, "use_vr_diana": False, "use_diana": False, "use_gd": True,
                              "init_compressor": lambda cmr: cmr.makeRandKCompressor(int(10), D),
                              "component_bits_size": 32
                              }, 
+                            #  {"gamma": fixed_gamma, "p":p, "lamb" : L*(1.0e-6), 
+                            #  "use_vr_marina" : False, "use_marina": False, "use_vr_diana": True, "use_diana": False, "use_gd": False,
+                            #  "init_compressor": lambda cmr: cmr.makeRandKCompressor(int(1), D),
+                            #  "component_bits_size": 32
+                            #  }, 
+
+                            #  {"gamma": fixed_gamma, "p":p, "lamb" : L*(1.0e-6), 
+                            #  "use_vr_marina" : False, "use_marina": False, "use_vr_diana": True, "use_diana": False, "use_gd": False,
+                            #  "init_compressor": lambda cmr: cmr.makeRandKCompressor(int(5), D),
+                            #  "component_bits_size": 32
+                            #  },
+                            #  {"gamma": fixed_gamma, "p":p, "lamb" : L*(1.0e-6), 
+                            #  "use_vr_marina" : False, "use_marina": False, "use_vr_diana": True, "use_diana": False, "use_gd": False,
+                            #  "init_compressor": lambda cmr: cmr.makeRandKCompressor(int(10), D),
+                            #  "component_bits_size": 32
+                            #  }, 
                ]
 
 one_test = os.getenv("one_test", "").strip()  
-rootprint(f"one_test env.variabel: '{one_test}'")  
+rootprint(f"one_test env.variable: '{one_test}'")  
 
 if len(one_test) > 0 and int(one_test) >= 0:
     ktest_values = [ktest_values[int(one_test)]]
@@ -394,7 +401,12 @@ KTests = len(ktest_values)                                   # Total number of t
 transfered_bits_by_node = np.zeros((KTests, KRounds, KMax)) # Transfered bits
 fi_grad_calcs_by_node   = np.zeros((KTests, KRounds, KMax)) # Evaluate number gradients for fi
 
+
 xk_nodes = np.zeros((KTests, KRounds, KMax, D))
+"""
+shape = (test, round, max_iter, dim)
+"""
+
 yk_nodes = np.zeros((KTests, KRounds, KMax, D))
 xk_nodes_solution = np.zeros((KTests, KRounds, D))
 
@@ -652,7 +664,7 @@ for t in range(KTests):
                     else:
                         ck = 0
     
-                    if ck == 1:
+                    if ck == 1: # TODO not clear
                         dbgprint(">>master node broadcast start")
                         comm.bcast("bcast_g_c1", root = 0)
                         dbgprint(">>master node broadcast end")
@@ -1012,26 +1024,26 @@ if mpi_rank == 0:
         ax = fig.add_subplot(1, 1, 1)
         ax.semilogy(KSamples, fn_train_with_regul_loss, color=color, marker=marker, markevery=markevery, linestyle=linestyle, label=short_algo_name)
         if t == KTests - 1:
-            ax.set_xlabel('Iteration', fontdict = {'fontsize':35})
-            ax.set_ylabel('$f(x)$', fontdict = {'fontsize':35})
+            ax.set_xlabel('Iteration')
+            ax.set_ylabel('$f(x)$')
             ax.grid(True)
-            ax.legend(loc='best', fontsize = 25)
-            plt.title(f'{test_name}', fontdict = {'fontsize':35})
-            plt.xticks(fontsize=27)
-            plt.yticks(fontsize=30)
+            ax.legend(loc='best')
+            plt.title(f'{test_name}')
+            plt.xticks()
+            plt.yticks()
 
 
         fig = plt.figure(main_fig_p2.number)
         ax = fig.add_subplot(1, 1, 1)
         ax.semilogy(KSamples, fn_train_with_regul_loss_grad_norm, color=color, marker=marker, markevery=markevery, linestyle=linestyle, label=short_algo_name)
         if t == KTests - 1:
-            ax.set_xlabel('Iteration', fontdict = {'fontsize':35})
-            ax.set_ylabel('$||\\nabla f(x)||^2$', fontdict = {'fontsize':35})
+            ax.set_xlabel('Iteration')
+            ax.set_ylabel('$||\\nabla f(x)||^2$')
             ax.grid(True)
-            ax.legend(loc='best', fontsize = 25)            
-            plt.title(f'{test_name}', fontdict = {'fontsize':35})
-            plt.xticks(fontsize=27)
-            plt.yticks(fontsize=30)
+            ax.legend(loc='best')            
+            plt.title(f'{test_name}')
+            plt.xticks()
+            plt.yticks()
 
         #===================================================================================================================================
         fig = plt.figure(transport_fig_p1.number)
@@ -1039,13 +1051,13 @@ if mpi_rank == 0:
         if not i_use_gd:
             ax.semilogy(get_subset(transfered_bits_mean,KSamples), fn_train_with_regul_loss, color=color, marker=marker, markevery=markevery, linestyle=linestyle, label=short_algo_name)
         if t == KTests - 1:
-            ax.set_xlabel(f'#bits/n', fontdict = {'fontsize':35})
-            ax.set_ylabel('$f(x)$', fontdict = {'fontsize':35})
+            ax.set_xlabel(f'#bits/n')
+            ax.set_ylabel('$f(x)$')
             ax.grid(True)
-            ax.legend(loc='best', fontsize = 25)
-            plt.title(f'{test_name}', fontdict = {'fontsize':35})
-            plt.xticks(fontsize=27)
-            plt.yticks(fontsize=30)
+            ax.legend(loc='best')
+            plt.title(f'{test_name}')
+            plt.xticks()
+            plt.yticks()
 
 
         fig = plt.figure(transport_fig_p2.number)
@@ -1053,13 +1065,13 @@ if mpi_rank == 0:
         if not i_use_gd:
             ax.semilogy(get_subset(transfered_bits_mean,KSamples), fn_train_with_regul_loss_grad_norm, color=color, marker=marker, markevery=markevery, linestyle=linestyle, label=short_algo_name)
         if t == KTests - 1:
-            ax.set_xlabel(f'#bits/n', fontdict = {'fontsize':35})
-            ax.set_ylabel('$||\\nabla f(x)||^2$', fontdict = {'fontsize':35})
+            ax.set_xlabel(f'#bits/n')
+            ax.set_ylabel('$||\\nabla f(x)||^2$')
             ax.grid(True)
-            ax.legend(loc='best', fontsize = 25)
-            plt.title(f'{test_name}', fontdict = {'fontsize':35})
-            plt.xticks(fontsize=27)
-            plt.yticks(fontsize=30)
+            ax.legend(loc='best')
+            plt.title(f'{test_name}')
+            plt.xticks()
+            plt.yticks()
 
 
         #=====================================================================================================================================
@@ -1069,13 +1081,13 @@ if mpi_rank == 0:
 
         ax.semilogy(get_subset(epochs,KSamples), fn_train_with_regul_loss, color=color, marker=marker, markevery=markevery, linestyle=linestyle, label=short_algo_name)
         if t == KTests - 1:
-            ax.set_xlabel(f'# epochs',fontdict = {'fontsize':35})
-            ax.set_ylabel('$f(x)$',fontdict = {'fontsize':35})
+            ax.set_xlabel(f'# epochs')
+            ax.set_ylabel('$f(x)$')
             ax.grid(True)
-            ax.legend(loc='best', fontsize = 25)
-            plt.title(f'{test_name}', fontdict = {'fontsize':35})
-            plt.xticks(fontsize=27)
-            plt.yticks(fontsize=30)
+            ax.legend(loc='best')
+            plt.title(f'{test_name}')
+            plt.xticks()
+            plt.yticks()
 
 
         fig = plt.figure(oracles_fig_p2.number)
@@ -1083,14 +1095,14 @@ if mpi_rank == 0:
         ax.semilogy(get_subset(epochs,KSamples), fn_train_with_regul_loss_grad_norm, color=color, marker=marker, markevery=markevery, linestyle=linestyle, label=short_algo_name)
         if t == KTests - 1:
             main_description = main_description + algo_name
-            ax.set_xlabel(f'# epochs', fontdict = {'fontsize':35})
-            ax.set_ylabel('$||\\nabla f(x)||^2$',fontdict = {'fontsize':35})
+            ax.set_xlabel(f'# epochs')
+            ax.set_ylabel('$||\\nabla f(x)||^2$')
             ax.grid(True)
-            ax.legend(loc='best', fontsize = 25)
-            plt.title(f'{test_name}', fontdict = {'fontsize':35})
-            rootprint("INFO: PLOT NAME:", f'"{test_name}", n={Workers}, d={D}; ' + main_description)
-            plt.xticks(fontsize=27)
-            plt.yticks(fontsize=30)
+            ax.legend(loc='best')
+            plt.title(f'{test_name}')
+            rootprint("NAME:", f'"{test_name}", n={Workers}, d={D}; ' + main_description)
+            plt.xticks()
+            plt.yticks()
 
         else:
             main_description = main_description + algo_name + ", "
@@ -1103,14 +1115,14 @@ if mpi_rank == 0:
 
         #'Oracle gradient calculation per iteration
         if t == KTests - 1:
-            ax.set_xlabel('Iteration', fontdict = {'fontsize':35})
-            ax.set_ylabel('Oracle request for evaluate $\\nabla f_i(x)$ at iteration',fontdict = {'fontsize':35})
+            ax.set_xlabel('Iteration')
+            ax.set_ylabel('Oracle request for evaluate $\\nabla f_i(x)$ at iteration')
             ax.grid(True)
-            ax.legend(loc='best', fontsize = 25)
+            ax.legend(loc='best')
 #            fig.suptitle(f'{test_name}')
-            plt.title(f'{test_name}', fontdict = {'fontsize' : 35})
-            plt.xticks(fontsize=27)
-            plt.yticks(fontsize=30)
+            plt.title('f')
+            plt.xticks()
+            plt.yticks()
 
 
         fig = plt.figure(aux_fig_p2.number)
@@ -1121,14 +1133,14 @@ if mpi_rank == 0:
 
         # Send bits per iteration
         if t == KTests - 1:
-            ax.set_xlabel('Iteration', fontdict = {'fontsize':35})
-            ax.set_ylabel('Sent bits from node to master at iteration', fontdict = {'fontsize':35})
+            ax.set_xlabel('Iteration')
+            ax.set_ylabel('Sent bits from node to master at iteration')
             ax.grid(True)
-            ax.legend(loc='best', fontsize = 25)            
+            ax.legend(loc='best')            
 #           fig.suptitle(f'{test_name}')
-            plt.title(f'{test_name}', fontdict = {'fontsize' : 35})
-            plt.xticks(fontsize=27)
-            plt.yticks(fontsize=30)
+            plt.title('f')
+            plt.xticks()
+            plt.yticks()
 
 
     main_fig_p1.tight_layout()

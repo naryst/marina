@@ -344,10 +344,10 @@ def main():
     utils.printTorchInfo()
     print("******************************************************************")
     cpu_device   = torch.device("cpu")      # CPU device
-    gpu_device_0 = torch.device('cuda:0')   # Selected GPU (index 0)
-    gpu_device_1 = torch.device('cuda:1')   # Selected GPU (index 1)
+    gpu_device_0 = torch.device('cuda')   # Selected GPU (index 0)
+    # gpu_device_1 = torch.device('cuda:1')   # Selected GPU (index 1)
 
-    available_devices = [gpu_device_1]
+    available_devices = [gpu_device_0]
     master_device = available_devices[0]
     print("******************************************************************")
     global nn_config, workers_config

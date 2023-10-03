@@ -27,19 +27,20 @@ class DataSet:
     def variables(self): 
         return self.train_samples.shape[1]
     def attributes(self): 
-        return variables()
+        return self.variables()
     def fields(self):
-        return variables()
+        return self.variables()
     def parametersDimension(self): 
-        return variables()
+        return self.variables()
 
     def __init__(self):
-        self.train_samples        = np.zeros( (0, 0), dtype = np.float)
-        self.test_samples         = np.zeros( (0, 0), dtype = np.float)
-        self.train_true_targets   = np.zeros( (0, 1), dtype = np.float)
-        self.test_true_targets    = np.zeros( (0, 1), dtype = np.float)
+        self.train_samples        = np.zeros( (0, 0), dtype = np.float64) # TODO np.float64?
+        self.test_samples         = np.zeros( (0, 0), dtype = np.float64)
+        self.train_true_targets   = np.zeros( (0, 1), dtype = np.float64)
+        self.test_true_targets    = np.zeros( (0, 1), dtype = np.float64)
    
-    def analyzeDataset(inputfile):
+   # TODO: self?
+    def analyzeDataset(self, inputfile):
         f = 0
         s_pos = 0
         s_neg = 0
@@ -70,7 +71,8 @@ class DataSet:
 
         return f,s_pos,s_neg
 
-    def readSparseInput(inputfile, features, posEexamples, negExamples, includeBias):
+    # TODO: self?
+    def readSparseInput(self, inputfile, features, posEexamples, negExamples, includeBias):
         examples = posEexamples + negExamples
 
         X = np.zeros((examples,features), float)
@@ -105,14 +107,14 @@ class DataSet:
         input_train = "./data/" + test_name
         input_test = input_train + ".t"
 
-        features_train, pos_examples_train, neg_example_train = DataSet.analyzeDataset(input_train)
-        features_test, pos_examples_test, neg_example_test = DataSet.analyzeDataset(input_test)
+        features_train, pos_examples_train, neg_example_train = self.analyzeDataset(input_train)
+        features_test, pos_examples_test, neg_example_test = self.analyzeDataset(input_test)
 
         # Append bias term at first place or zero
         features = max(features_train, features_test) + 1
 
-        Xtrain, Ytrain = DataSet.readSparseInput(input_train,   features, pos_examples_train, neg_example_train, includeBias)
-        Xtest,  Ytest  = DataSet.readSparseInput(input_test, features, pos_examples_test, neg_example_test, includeBias)
+        Xtrain, Ytrain = self.readSparseInput(input_train,   features, pos_examples_train, neg_example_train, includeBias)
+        Xtest,  Ytest  = self.readSparseInput(input_test, features, pos_examples_test, neg_example_test, includeBias)
 
         self.train_samples        = Xtrain
         self.train_true_targets   = Ytrain       
