@@ -20,6 +20,8 @@ use_grad_check = (
 use_first_20_samples = True  # For debug purpose take only first 2e0 sample
 use_test_set = False  # Use test set in graphic and calculations
 
+DATA_DIR = "saved_results/"
+
 t0 = time.time()
 
 # ==================================MPI metainformation===================================================================
@@ -290,12 +292,20 @@ data.test_true_targets = 2 * (
     (data.test_true_targets - min_target) / (max_target - min_target) - 0.5
 )
 
+"""
+Train shape w8 - (49749, 301)
+Test shape w8 - (14951, 301)
+"""
 # ====================================================================================================================
 if use_first_20_samples:
-    data.train_samples = data.train_samples[0:20]  # 000,:]
-    data.train_true_targets = data.train_true_targets[0:20]  # 000,:]
-    data.test_samples = data.test_samples[:20]
-    data.test_true_targets = data.test_true_targets[:20]
+    train_size = 1000
+    test_size = 1000
+    random_train_idx = np.random.randint(0, data.train_samples.shape[0], train_size)
+    random_test_idx = np.random.randint(0, data.test_samples.shape[0], test_size)
+    data.train_samples = data.train_samples[0:train_size]  # 000,:]
+    data.train_true_targets = data.train_true_targets[0:train_size]  # 000,:]
+    data.test_samples = data.test_samples[:test_size]
+    data.test_true_targets = data.test_true_targets[:test_size]
 # ====================================================================================================================
 # if mpi_rank == 0:
 #     data.printInfo()
@@ -420,18 +430,18 @@ ktest_values = [
         "init_compressor": lambda cmr: cmr.makeRandKCompressor(int(10), D),
         "component_bits_size": 32,
     },
-    {
-        "gamma": fixed_gamma,
-        "p": p,
-        "lamb": L * (1.0e-6),
-        "use_vr_marina": False,
-        "use_marina": False,
-        "use_vr_diana": False,
-        "use_diana": False,
-        "use_gd": True,
-        "init_compressor": lambda cmr: cmr.makeRandKCompressor(int(10), D),
-        "component_bits_size": 32,
-    },
+    # {
+    #     "gamma": fixed_gamma,
+    #     "p": p,
+    #     "lamb": L * (1.0e-6),
+    #     "use_vr_marina": False,
+    #     "use_marina": False,
+    #     "use_vr_diana": False,
+    #     "use_diana": False,
+    #     "use_gd": True,
+    #     "init_compressor": lambda cmr: cmr.makeRandKCompressor(int(10), D),
+    #     "component_bits_size": 32,
+    # },
     #  {"gamma": fixed_gamma, "p":p, "lamb" : L*(1.0e-6),
     #  "use_vr_marina" : False, "use_marina": False, "use_vr_diana": True, "use_diana": False, "use_gd": False,
     #  "init_compressor": lambda cmr: cmr.makeRandKCompressor(int(1), D),
@@ -1239,9 +1249,9 @@ if mpi_rank == 0:
             prefix4algo = "gd"
 
         if len(one_test) == 0:
-            utils.serialize(my, f"experiment_{t}_{prefix4algo}_{test_name}.bin")
+            utils.serialize(my, f"{DATA_DIR}experiment_{t}_{prefix4algo}_{test_name}.bin")
         else:
-            utils.serialize(my, f"experiment_{one_test}_{prefix4algo}_{test_name}.bin")
+            utils.serialize(my, f"{DATA_DIR}experiment_{one_test}_{prefix4algo}_{test_name}.bin")
         # ===============================================================================
         rootprint(
             f"final iterate for {t+1}/{KTests} test. it's l2 norm square divided by two: ",
@@ -1487,7 +1497,8 @@ if mpi_rank == 0:
     # plt.show()
 
     save_to = (
-        script_name
+        DATA_DIR
+        + script_name
         + "_"
         + os.path.basename(test_name)
         + "_main"
@@ -1500,7 +1511,8 @@ if mpi_rank == 0:
     rootprint("Image is saved into: ", save_to)
 
     save_to = (
-        script_name
+        DATA_DIR
+        + script_name
         + "_"
         + os.path.basename(test_name)
         + "_main"
@@ -1513,21 +1525,22 @@ if mpi_rank == 0:
     rootprint("Image is saved into: ", save_to)
 
     save_to = (
-        script_name + "_" + os.path.basename(test_name) + "_oracles"
+        DATA_DIR + script_name + "_" + os.path.basename(test_name) + "_oracles"
         "_p1" + "_" + one_test + ".pdf"
     )
     oracles_fig_p1.savefig(save_to, bbox_inches="tight")
     rootprint("Image is saved into: ", save_to)
 
     save_to = (
-        script_name + "_" + os.path.basename(test_name) + "_oracles"
+        DATA_DIR + script_name + "_" + os.path.basename(test_name) + "_oracles"
         "_p2" + "_" + one_test + ".pdf"
     )
     oracles_fig_p2.savefig(save_to, bbox_inches="tight")
     rootprint("Image is saved into: ", save_to)
 
     save_to = (
-        script_name
+        DATA_DIR
+        + script_name
         + "_"
         + os.path.basename(test_name)
         + "_transport"
@@ -1540,7 +1553,8 @@ if mpi_rank == 0:
     rootprint("Image is saved into: ", save_to)
 
     save_to = (
-        script_name
+        DATA_DIR
+        + script_name
         + "_"
         + os.path.basename(test_name)
         + "_transport"
@@ -1553,7 +1567,8 @@ if mpi_rank == 0:
     rootprint("Image is saved into: ", save_to)
 
     save_to = (
-        script_name
+        DATA_DIR
+        + script_name
         + "_"
         + os.path.basename(test_name)
         + "_aux"
@@ -1566,7 +1581,8 @@ if mpi_rank == 0:
     rootprint("Image is saved into: ", save_to)
 
     save_to = (
-        script_name
+        DATA_DIR
+        + script_name
         + "_"
         + os.path.basename(test_name)
         + "_aux"

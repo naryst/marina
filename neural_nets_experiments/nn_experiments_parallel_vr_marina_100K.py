@@ -283,6 +283,8 @@ class WorkerThreadMarina(threading.Thread):
 
             delta = sub_params(g_batch_next, g_batch_prev)
 
+            #TODO ????
+            #-------------------------------
             delta_offset = 0
             for t in range(len(delta)):
                 offset = len(delta[t].flatten(0))
@@ -296,6 +298,7 @@ class WorkerThreadMarina(threading.Thread):
                 offset = len(delta[t].flatten(0))
                 delta[t].flatten(0)[:] = delta_flatten[(delta_offset):(delta_offset + offset)]
                 delta_offset += offset
+            #---------------------------------
 
             g_new = add_params(wcfg.input_for_cmd, delta)
             wcfg.output_of_cmd = g_new
@@ -359,8 +362,8 @@ def main():
     nn_config.dataset = "CIFAR100"          # Dataset
     nn_config.model_name = "resnet18"      # NN architecture
     nn_config.load_workers = 0             # How many subprocesses to use for data loading. 0 means that the data will be loaded in the main process.
-    nn_config.batch_size = 128             # Technical batch size for training (due to GPU limitations)
-    nn_config.KMax = 3500                  # Maximum number of iterations
+    nn_config.batch_size = 16             # Technical batch size for training (due to GPU limitations)
+    nn_config.KMax = 350                  # Maximum number of iterations
 
     # Number of workers
     kWorkers = 5                                # Number of workers
