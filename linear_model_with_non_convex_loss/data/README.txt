@@ -1,2 +1,0 @@
-Please use download.sh to download need data. If repository did not provide any test data then please after unpack and prepare data generate artifical test data:
-cat "train_file" | head -n2 > "train_file.t" 
