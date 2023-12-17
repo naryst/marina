@@ -8,7 +8,7 @@ This paper proposes a new algorithm, which performs communication efficient dist
 This method aims to optimize smooth, but non-convex finite-sum problems of the following form:
 
 $$
-\min_{x \in \mathbb{R}^d} \left\{ f(x) = \frac{1}{n} \sum_{i=1}^n f_i(x) \right\}
+\min_{x \in \mathbb{R}^d} \left( f(x) = \frac{1}{n} \sum_{i=1}^n f_i(x) \right)
 $$
 
 where $n$ **clients** are connected in a centralized way with a **parameter-server**, and client $i$ has an access to the local loss function $f_i$ only.
