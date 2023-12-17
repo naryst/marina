@@ -94,7 +94,9 @@ $$
 g_i^{k+1} = 
 \begin{cases}
 \nabla f_i(x) & \text{if } c_k = 1\\
-g_i^k +  2 d_i^T \left( \sum_{j = 1}^k Q \left[ d_jx_j^{k+1} - d_ix_i^{k} \right] \right) & \text{otherwise}
+
+g_i^k +  2 d_i^T \left( \sum_{j = 1}^{k} Q \left[ d_jx_j^{k+1} - d_ix_i^{k} \right] \right) & \text{otherwise}
+
 \end{cases} 
 $$
 
