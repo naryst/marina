@@ -105,3 +105,22 @@ $$
 As we can see, the algorithm converges even with the compression of the gradient differences. 
 
 ### Experiments with multi-modal data and complex models
+
+In this part I used multi-modal data, which is a combination of the text and image data. As a dataset I used the CUB-200-2011 dataset [link](https://paperswithcode.com/dataset/cub-200-2011), which contains images of the birds and their descriptions. And the task is to predict the class of the bird based on the given information.
+Sample from the dataset looks like this:
+
+![Dataset sample](figures/sample.png)
+
+And the model I used for the prediction is the combination of the ResNet-18 for the images and BERT for the text. Architecture of the model is the following:
+
+![Architecture](figures/architecture.png)
+
+First I trained the model with full gradient, to check if fine-tuning of BERT and ResNet-18 needed for this task. And the results are the following:
+
+![Comparison](figures/loss_comapre.png)
+
+As we can see, the model with fine-tuning of BERT and ResNet-18 doesn't make much difference. So I used the model with the pre-trained BERT and ResNet-18 for the experiments.
+
+In this setup we don't send the gradients from the server to workers, so we can't use gradient compression here. Instead I tried to use the compression on the forward pass. I compress vectors of embeddings from the ResNet-18 and BERT, and then send them to the server. With this I got the following results with different compression rates: 
+
+![Compression](vertical_split_algo/multimodal_dataset/results/sparsiti_level_comparison_10.png)
