@@ -6,9 +6,11 @@ This repository contains the experiments and possible extensions of the paper [M
 This paper proposes a new algorithm, which performs communication efficient distributed learning. It utilizes the compression strategy based on compression of gradient differences. And this method deals with the bottleneck of the communication in distributed learning, which is the main problem of the distributed learning.
 
 This method aims to optimize smooth, but non-convex finite-sum problems of the following form:
+
 $$
 \min_{x \in \mathbb{R}^d} \left \{ f(x) = \frac{1}{n} \sum_{i=1}^n f_i(x) \right \}
 $$
+
 where $n$ **clients** are connected in a centralized way with a **parameter-server**, and client $i$ has an access to the local loss function $f_i$ only.
 
 The algoithm implements the following steps:
@@ -61,12 +63,15 @@ Function we want to minimize is:
 $$
 L(f) = \|DX - b\|_2^2
 $$
+
 It's derivative *(gradient)* is:
+
 $$
 \frac{\partial L(f)}{\partial x_i} = 2d_i^T(DX - b)
 $$
 
 For gradient we need $DX$ term, which contains info from all the workers. 
+
 $$
 DX = \sum_{i = 1}^kd_ix_i
 $$
@@ -74,11 +79,13 @@ $$
 And we can't calculate it on each worker, because it will be too expensive. So we need to use the compression of the gredient differences as in the original paper.
 
 **Quantized gradient difference is:**
+
 $$
 \nabla f_i(x_i) = 2 d_i^T \left( \sum_{j = 1}^k Q \left[ d_jx_j^{k+1} - d_ix_i^{k} \right] \right)
 $$
 
 **And the update rule is:**
+
 $$
 x_i^{k+1} = x_i^k - \gamma g_i^k
 $$
