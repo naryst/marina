@@ -124,3 +124,19 @@ As we can see, the model with fine-tuning of BERT and ResNet-18 doesn't make muc
 In this setup we don't send the gradients from the server to workers, so we can't use gradient compression here. Instead I tried to use the compression on the forward pass. I compress vectors of embeddings from the ResNet-18 and BERT, and then send them to the server. With this I got the following results with different compression rates: 
 
 ![Compression](vertical_split_algo/multimodal_dataset/results/sparsiti_level_comparison_10.png)
+
+This method of comparison is not what we would want, as we compressing the data on the forward pass, but not the gradients. So, to implement the MARINA-like algorithm for the vertical partitioning of the dataset, we need to modify the model architecture. We need to have trainable parameters on the clients side, so we can send gradients from the server to them. So, the modified architecture looks like this:
+
+![Modified architecture](figures/NN.drawio.svg)
+
+It's identical to the previous one, but now we have trainable parameters on the clients side. And with this we can utilize the compression of the gradient differences. 
+
+#### Results
+I tried to train the model with different compression rates, and got the following results:
+
+![Results](figures/quantization.png)
+
+As we can see, the model converges even with the compression of the gradient differences. So, we can use this method for the distributed learning with the vertical partitioning of the dataset.
+
+# Conclusion
+During this project I reproduced the experiments from the original paper, and implemented the MARINA-like algorithm for the vertically splitted dataset. And the results show that the algorithm converges even with the compression of the gradient differences. So, we can use this method for the distributed learning with the vertical partitioning of the dataset.
