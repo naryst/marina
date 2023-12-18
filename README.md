@@ -81,7 +81,7 @@ And we can't calculate it on each worker, because it will be too expensive. So w
 **Quantized gradient difference is:**
 
 $$
-\nabla f_i(x_i) = 2 d_i^T \left( \sum_{j = 1}^k Q \left[ d_jx_j^{k+1} - d_ix_i^{k} \right] \right)
+\nabla f_i(x_i) = 2 d_i^T \left( \sum_{j = 1}^k Q \left[ d_jx_j^{k+1} - d_jx_j^{k} \right] \right)
 $$
 
 **And the update rule is:**
@@ -95,7 +95,7 @@ g_i^{k+1} =\nabla f_i(x) \text{, if } c_k = 1
 $$
 
 $$
-g_i^{k+1} = g_i^k +  2 d_i^T \left( \sum_{j = 1}^{k} Q \left[ d_jx_j^{k+1} - d_ix_i^{k} \right] \right) \text{otherwise}
+g_i^{k+1} = g_i^k +  2 d_i^T \left( \sum_{j = 1}^{k} Q \left[ d_jx_j^{k+1} - d_jx_j^{k} \right] \right) \text{otherwise}
 $$
 
 #### Results
